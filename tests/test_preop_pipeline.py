@@ -191,3 +191,13 @@ def test_rules_engine_matches_all_sample_labels_with_heuristic_extractor(monkeyp
         out = triage_submission(row["submission"], model="unused")
         assert out.decision == row["label"]["decision"], row["case_id"]
         assert sorted({i.category for i in out.issues}) == sorted(set(row["label"]["categories"])), row["case_id"]
+
+
+def test_verify_snaps_garbled_quote_to_verbatim_source_line():
+    v = VitalFact(doc_id="d", kind="temperature", systolic=None, diastolic=None, temp_value=36.7, temp_unit="C",
+                  measured_date="2026-03-03", measured_time="09:05", is_recheck=False, quote="09:05  Temp 36.7 \x176C")
+    res = verify(ex(hp_documents=[], consents=[], vitals=[v]), {"d": "09:05  BP 157/117, Temp 36.7 \u00b0C\nHR 80"})
+    assert res.clean and res.extraction.vitals[0].quote == "09:05  BP 157/117, Temp 36.7 \u00b0C"
+    # snapping must never rescue a wrong number
+    bad = v.model_copy(update={"temp_value": 39.9})
+    assert not verify(ex(hp_documents=[], consents=[], vitals=[bad]), {"d": "09:05  BP 157/117, Temp 36.7 \u00b0C"}).clean

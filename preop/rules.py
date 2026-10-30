@@ -255,7 +255,7 @@ def evaluate(sub, ex: Extraction, dropped: list[str]) -> Result:
 
     for drug in taking:
         plans = [p for p in ex.anticoag_plans if canonical_anticoagulant(p.drug_as_written) == drug]
-        other = [p for p in ex.anticoag_plans if canonical_anticoagulant(p.drug_as_written) != drug]
+        other = [p for p in ex.anticoag_plans if canonical_anticoagulant(p.drug_as_written) not in (None, drug)]
         srcs = [doc_src(p.doc_id, p.quote) for p in plans or other]
         full = [p for p in plans if p.pre_op == "explicit" and p.post_op == "explicit"]
         if full:

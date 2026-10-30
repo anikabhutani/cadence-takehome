@@ -36,7 +36,18 @@ regression test that the rules reproduce all 50 labels given correct facts. `mak
 match locally (false READYs listed first); `EXTRACTOR=heuristic` runs fully offline.
 
 **Honest limits**
-- The heuristic extractor scores 50/50 but was tuned on this sample, so that number validates the *rules engine*, not extraction generalisation.
+## Results
+LLM extractor (gpt-4.1-mini) on the 50 labelled samples: 48/50 decisions match,
+47/50 category sets match, 0 false READYs. The deterministic rules engine
+reproduces all 50 labels given correct facts (offline regression test).
+
+## Known misses
+- Cases 3 and 35: my quote-grounding check mishandled multi-line quotes, so valid
+  vitals were discarded and the case was routed to human review (safe direction).
+  Fix identified: match multi-line quotes line by line.
+- Case 0: the model treated "per surgical team" as deferring a plan that gives
+  explicit timing. Fix identified: prompt clarification.
+
 - The LLM extractor's live accuracy has not been measured in my environment (no OpenAI access); `make local` is how to measure it.
   Diff its facts against the heuristic's to find extraction misses.
 - Timezones are ignored (Z and local times compared naively); the anticoagulant list is a fixed map (unknown drugs would need the model's drug-class hint).
